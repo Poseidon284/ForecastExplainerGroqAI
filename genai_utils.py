@@ -52,6 +52,7 @@ def explain_forecast(forecast, llm, period, freq):
         Any outliers could be explained by holidays in France or popular tourist times."""),
         ("user",f"""Forecasted Sales Data:\n{forecast_data, freq}. This forecast is the average for the given frequency.
          If it is "M" then it is average forecast is for that month, If it is "W" then it is average forecast for the week. If it is "QE" then it is average forecast for next quarter.
+         If it is Monthly forecast, give insights to improve for the forecasted months. For weekly, describe how the sales will be for the weeks to come and give pointers to tackle that. If Quarterly, compare it with history and give insights about the quarters.
          Give some actionable insights in 8 bullet points that will be within 15-25 lines. 
          DO NOT GIVE SLIDE SEPARATIONS "Slide 3 - What to do with this information" 
          Give a concluding statement on what you think will happen to the Sales for the forecasted period.
