@@ -30,6 +30,13 @@ elif option == "Quarters":
 if st.button("Generate Forecast"):
     forecast = make_forecast(model, freq, periods)
 
+    st.subheader("Forecast Sales")
+    disp_fore = forecast[-periods:]
+    disp_fore = disp_fore.rename(columns={"yhat":'Predicted Sales','ds':'Date'})
+    disp_fore = disp_fore.reset_index(drop=True)
+    disp_fore.index = disp_fore.index + 1
+    st.table(disp_fore[["Date","trend","Predicted Sales"]])
+
     # Show plot
     fig = plot_forecast(model, forecast)
     st.plotly_chart(fig[0], use_container_width=True)

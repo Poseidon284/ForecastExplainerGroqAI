@@ -38,7 +38,7 @@ def get_llm(api_key):
 
 def explain_forecast(forecast, llm, period, freq):
     context_csv = forecast[["ds", "trend" , "yhat", "yhat_upper", "yhat_lower"]]
-    forecast_data = context_csv[:-period]
+    forecast_data = context_csv[-period:]
     # forecast = aggre(forecast_data)
     history = pd.read_csv('monthly_data_cakes.csv', index_col=0)
     forecast = forecast_data.to_string()
