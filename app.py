@@ -8,7 +8,7 @@ from genai_utils import explain_forecast, setup, get_llm
 with open("cake_model.pkl", "rb") as f:
     model = pickle.load(f)
 
-st.title("📈 Prophet Forecasting App with Groq LLM")
+st.title("Prophet Forecasting App with Groq LLM")
 
 option = st.selectbox(
     "Select Forecast Horizon:",
@@ -40,7 +40,7 @@ if st.button("Generate Forecast"):
     st.download_button("Download Forecast CSV", data=forecast.to_csv(index=False), file_name="forecast.csv", mime="text/csv")
 
     # GenAI explanation
-    st.subheader("🤖 Forecast Explanation")
+    st.subheader("Forecast Explanation")
     api_key = setup("GROQ_API_KEY")
     llm = get_llm(api_key)
     explanation = explain_forecast(forecast, llm, periods, freq)
