@@ -37,11 +37,10 @@ def get_llm(api_key):
 #     return forecast
 
 def explain_forecast(forecast, llm, period, freq):
-    context_csv = forecast[["ds", "trend" , "yhat", "yhat_upper", "yhat_lower"]]
-    forecast_data = context_csv[-period:]
+    forecast_data = forecast[-period:]
     # forecast = aggre(forecast_data)
     history = pd.read_csv('monthly_data_cakes.csv', index_col=0)
-    forecast = forecast_data.to_string()
+    forecast = forecast.to_string()
     dates = history['date'].tolist()
     sales = history['Sales'].tolist()
 
@@ -49,8 +48,8 @@ def explain_forecast(forecast, llm, period, freq):
         ("system", f"""You are an expert data story-teller tasked with explaining the forecast to a manager who wants to see how well his company is performing and what to look forward to based on this data"
         Historical Sales Data:\n{dates,sales}. This data is from France so if there is a French holiday with high average, tell that.
         These terms are banned - yhat, trend, forecast. There is no geographic focus on the data.
-        Any outliers could be explained by holidays in France or popular tourist times."""),
-        ("user",f"""Forecasted Sales Data:\n{forecast_data, freq}. This forecast is the average for the given frequency.
+        Any outliers could be explained by actual holidays in France or popular tourist times."""),
+        ("user",f"""Forecasted Sales Data:\n{forecast_data, freq}. This forecast is the average for daily data for the given frequency.
          If it is "M" then it is average forecast is for that month, If it is "W" then it is average forecast for the week. If it is "QE" then it is average forecast for next quarter.
          If it is Monthly forecast, give insights to improve for the forecasted months. For weekly, describe how the sales will be for the weeks to come and give pointers to tackle that. If Quarterly, compare it with history and give insights about the quarters.
          Give some actionable insights in 8 bullet points that will be within 15-25 lines. 
