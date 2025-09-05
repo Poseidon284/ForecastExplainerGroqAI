@@ -28,21 +28,13 @@ def get_llm(api_key):
         temperature=0.7
     )
 
-# def aggre(forecast):
-#     # forecast['ds'] = pd.to_datetime(forecast['ds'])
-#     if len(forecast) >= 30:
-#         forecast = (forecast.groupby(pd.Grouper(key="ds", freq="ME")).mean().reset_index())
-#     else:
-#         forecast = (forecast.groupby(pd.Grouper(key="ds", freq="W")).mean().reset_index())
-#     return forecast
-
 def explain_forecast(forecast, llm, period, freq):
     forecast_data = forecast[-period:]
-    # forecast = aggre(forecast_data)
     history = pd.read_csv('monthly_data_cakes.csv', index_col=0)
     forecast = forecast.to_string()
     dates = history['date'].tolist()
     sales = history['Sales'].tolist()
+    brand_name = "MarketBuddy"
 
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", f"""You are an expert data story-teller tasked with explaining the forecast to a manager who wants to see how well his company is performing and what to look forward to based on this data"
@@ -55,8 +47,8 @@ def explain_forecast(forecast, llm, period, freq):
          Give some actionable insights in 8 bullet points that will be within 15-25 lines. 
          DO NOT GIVE SLIDE SEPARATIONS "Slide 3 - What to do with this information" 
          Give a concluding statement on what you think will happen to the Sales for the forecasted period.
-         Do not use any complicated statistical terms.
-         Give output in a markdown friendly format""")
+         Do not use any complicated statistical terms. 
+         Give output in a markdown friendly format and use this as the first line for every response 'Your {brand_name} Insights' as the biggest Heading""")
     ])
 
     chain = prompt_template | llm
