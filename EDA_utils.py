@@ -96,7 +96,7 @@ def evaluate_forecast(forecast):
     return confidence_score, interval_width_pct
 
 
-def download_plotly_chart(fig, filename="chart", format="png"):
+def download_plotly_chart(fig, filename="chart", format="html"):
     random_key = str(uuid.uuid4())
     if format.lower() == "png":
         img_bytes = fig.to_image(format="png")

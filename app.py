@@ -156,14 +156,14 @@ with tab2:
         if st.session_state.chart_choice == "Trend Chart":
             st.subheader("Trend Chart")
             st.plotly_chart(figs[0], use_container_width=True)
-            dl_option = st.selectbox("Select Format to download", ("png","html"), key="trends")
+            dl_option = st.selectbox("Select Format to download", ("html"), key="trends")
             download_plotly_chart(figs[0], filename="past_sales_chart", format=dl_option)
             st.info("Your file is ready to be downloaded!")
 
         elif st.session_state.chart_choice == "Seasonality Chart":
             st.subheader("Seasonality Chart")
             st.plotly_chart(figs[1], use_container_width=True)
-            dl_option = st.selectbox("Select Format to download", ("png","html"), key="trends")
+            dl_option = st.selectbox("Select Format to download", ("html"), key="trends")
             download_plotly_chart(figs[1], filename="seasonality_chart", format=dl_option)
             st.info("Your file is ready to be downloaded!")
     else:
