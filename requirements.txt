@@ -8,3 +8,4 @@ langchain-groq
 langchain-core
 groq
 markdown_pdf
+kaleido

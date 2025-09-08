@@ -24,8 +24,8 @@ def setup(key: str):
 def get_llm(api_key):
     return ChatGroq(
         api_key=api_key,
-        model_name="openai/gpt-oss-120b",
-        temperature=0.7
+        model_name="openai/gpt-oss-20b",
+        temperature=0.2
     )
 
 def explain_forecast(forecast, llm, period, freq):
@@ -51,6 +51,15 @@ def explain_forecast(forecast, llm, period, freq):
          Give output in a markdown friendly format and use this as the first line for every response 'Your {brand_name} Insights' as the biggest Heading""")
     ])
 
+    chain = prompt_template | llm
+    response = chain.invoke({})
+    return response.content
+
+def explain_performance(sales, llm, freq):
+    prompt_template = ChatPromptTemplate.from_messages([("system", f"""You are a Sales Representative tasked with giving an overview on Sales data based on the reports you receive.
+    The reports are in either monthly or quarterly format. Give output in a markdown friendly format in a professional format. Highlight highest performing and lowest performing period at the end.
+    Here is the report\n Report : {sales}"""),
+    ("user", f"Here is the frequency: {freq}.You should provide insights in 10 bullet points. Give only text and numbers.")])
     chain = prompt_template | llm
     response = chain.invoke({})
     return response.content
