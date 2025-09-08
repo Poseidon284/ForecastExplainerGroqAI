@@ -116,7 +116,7 @@ with tab1:
             st.plotly_chart(fig_line, use_container_width=True)
             st.text("This is your average sales for the past five periods you selected.")
             st.table(level_fore[:-periods].tail().reset_index(drop=True))
-            dl_option = st.selectbox("Select Format to download", ("png","html"), key="sales")
+            dl_option = st.selectbox("Select Format to download", ("html"), key="sales")
             download_plotly_chart(fig_line, filename="past_sales_chart", format=dl_option)
             st.info("Your file is ready to be downloaded!")
 
@@ -130,7 +130,7 @@ with tab1:
             st.text("This is your forecasted average sales for the period you selected.")
             st.write(f"Total Estimated Revenue in this Forecast period : € **{forecast['yhat'][-horizon_days:].sum().round(2)}**")
             st.table(level_fore[-periods:].reset_index(drop=True))
-            dl_option = st.selectbox("Select Format to download", ("png","html"), key="sales")
+            dl_option = st.selectbox("Select Format to download", ("html"), key="sales")
             download_plotly_chart(fig_line2, filename="forecast_sales_chart", format=dl_option)
             st.info("Your file is ready to be downloaded!")
         st.download_button(

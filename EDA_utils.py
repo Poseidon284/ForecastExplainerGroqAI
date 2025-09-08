@@ -98,16 +98,16 @@ def evaluate_forecast(forecast):
 
 def download_plotly_chart(fig, filename="chart", format="html"):
     random_key = str(uuid.uuid4())
-    if format.lower() == "png":
-        img_bytes = fig.to_image(format="png")
-        st.download_button(
-            label=f"📥 Download Chart",
-            data=img_bytes,
-            file_name=f"{filename}.png",
-            key=f"0{random_key}",
-            mime="image/png"
-        )
-    elif format.lower() == "html":
+    # if format.lower() == "png":
+    #     img_bytes = fig.to_image(format="png")
+    #     st.download_button(
+    #         label=f"📥 Download Chart",
+    #         data=img_bytes,
+    #         file_name=f"{filename}.png",
+    #         key=f"0{random_key}",
+    #         mime="image/png"
+    #     )
+    if format.lower() == "html":
         html_str = fig.to_html(full_html=True)
         st.download_button(
             label=f"📥 Download Chart",
