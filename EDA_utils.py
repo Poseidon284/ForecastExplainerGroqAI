@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import io
+import holidays
 import uuid
 import numpy as np
 
@@ -54,8 +55,57 @@ def months_plot():
     )
 
     fig.update_traces(textposition='outside')
-    fig.update_layout(yaxis_title='Total Cake Sales', xaxis_title='Month', width=800, height=500)
+    fig.update_layout(yaxis_title='Total Cake Sales', xaxis_title='Month', width=700, height=500)
     return fig, plot_df
+
+def holiday_analysis():
+    new_df = eda_df.copy()
+    fr_holidays = holidays.France(years=[2021,2022])
+    holiday_dates = pd.to_datetime(list(fr_holidays.keys()))
+    new_df['is_holiday_or_before'] = eda_df['date'].isin(holiday_dates) | eda_df['date'].isin(
+        [holiday_dates - pd.Timedelta(days=1)]
+    )
+
+    new_df["Quarter"] = new_df['date'].dt.to_period("Q").astype(str)
+    grouped = (
+        new_df.groupby(['Quarter','is_holiday_or_before'])['Sales']
+        .mean()
+        .reset_index()
+    )
+    grouped["Day Type"] = grouped["is_holiday_or_before"].map(
+        {True: "Holiday/Before", False: "Non-Holiday"}
+    )
+    fig0 = px.bar(
+        grouped,
+        x="Quarter",
+        y="Sales",
+        color="Day Type",
+        barmode="group",
+        text_auto=".2f",
+        title="Quarterly Average Sales: Holidays vs Non-Holidays",
+        labels={"Quarter": "Quarter", "Sales": "Average Sales"}
+    )
+
+    fig0.update_layout(
+        xaxis=dict(title="Quarter"),
+        yaxis=dict(title="Average Sales")
+    )
+
+    non_holiday_sales = new_df.loc[~new_df['is_holiday_or_before'], 'Sales'].mean()
+    holiday_mean_sales = new_df.loc[new_df["is_holiday_or_before"], 'Sales'].mean()
+
+    fig1 = px.bar(
+        x=['Non-Holiday Sales','Holiday Sales'], 
+        y=[non_holiday_sales, holiday_mean_sales], 
+        title="Holiday Effect on Sales",
+        text_auto=".2f",
+    )
+    fig1.update_layout(
+        xaxis=dict(title="Holidays"),
+        yaxis=dict(title="Average Sales"),
+    )
+    fig = [fig0, fig1]
+    return fig, grouped
 
 def sales_bar(period = 'M'):
     if period == 'M':

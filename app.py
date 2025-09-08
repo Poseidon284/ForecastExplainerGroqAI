@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 from forecast_utils import make_forecast, plot_forecast, mark_pdf
 from genai_utils import explain_forecast, setup, get_llm, explain_performance
-from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, sales_bar, days_plot, months_plot
+from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, sales_bar, days_plot, months_plot, holiday_analysis
 import io
 
 # Load Prophet model
@@ -14,6 +14,7 @@ api_key = setup("GROQ_API_KEY")
 llm = get_llm(api_key)
 
 st.title("📑 MarketBuddy")
+st.set_page_config(layout="wide")
 
 option = st.selectbox(
     "Select Forecast Horizon:",
@@ -94,7 +95,7 @@ if st.button("Generate Forecast"):
 # Tabs (always exist)
 # --------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["📊 Forecast Table", "📈 Trend Charts", "🤖 AI Insights", "EDA", "֎ Chatbot"]
+    ["📊 Forecast Table", "📈 Trend Charts", "🤖 AI Insights", "⚡️Analytics", "֎ Chatbot"]
 )
 
 with tab1:
@@ -202,7 +203,7 @@ with tab4:
     # st.text("Open the below link and click on the View on voila icon - The yellow curve in the task bar")
     # st.markdown(f"[View EDA]({link})")
     st.subheader("View your data")
-    plot_choice = st.selectbox("View sales by:", ["Monthly Average", "Quarterly Average", "Months" ,"Days"], index=0)
+    plot_choice = st.selectbox("View sales by:", ["Monthly Average", "Quarterly Average", "Months" ,"Days", "Holidays"], index=0)
     if plot_choice == 'Monthly Average':
         fig, periodical_sales = sales_bar('M')
     elif plot_choice == 'Quarterly Average':
@@ -211,16 +212,26 @@ with tab4:
         fig, periodical_sales = months_plot()
     elif plot_choice == "Days":
         fig, periodical_sales = days_plot()
-    st.plotly_chart(fig)
+    elif plot_choice == "Holidays":
+        fig, periodical_sales = holiday_analysis()
+    if len(fig.data)==1:
+        st.plotly_chart(fig)
+    elif len(fig.data)==2:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.plotly_chart(fig[1])
+        with col2:
+            st.plotly_chart(fig[0])
+    st.divider()
+    st.title("Insights")
     sales_explanation = explain_performance(periodical_sales, llm, plot_choice)
     st.markdown(sales_explanation)
     
 with tab5:
     link2 = "https://tariffsupp.streamlit.app/"
     st.title("Chat with your Data")
-    st.text(
+    st.write(
         """Ask your data questions and you shall get answers.
-
-        (Try something like "Give me the Sales Details for the US for A,B,C and D")"""
+***(Try something like "Give me the Sales Details for the US for A,B,C and D")***"""
     )
     st.markdown(f"[Chatbot]({link2})")

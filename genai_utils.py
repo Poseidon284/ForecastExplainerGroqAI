@@ -24,7 +24,7 @@ def setup(key: str):
 def get_llm(api_key):
     return ChatGroq(
         api_key=api_key,
-        model_name="openai/gpt-oss-20b",
+        model_name="openai/gpt-oss-120b",
         temperature=0.2
     )
 
