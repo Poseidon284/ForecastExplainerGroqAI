@@ -216,7 +216,7 @@ with tab4:
         fig, periodical_sales = holiday_analysis()
     if len(fig.data)==1:
         st.plotly_chart(fig)
-    elif len(fig.data)==2:
+    elif len(fig)==2:
         col1, col2 = st.columns(2)
         with col1:
             st.plotly_chart(fig[1])
