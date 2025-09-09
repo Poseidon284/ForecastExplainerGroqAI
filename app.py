@@ -227,8 +227,8 @@ with tab4:
         with col2:
             st.plotly_chart(fig[0])
     st.subheader("Insights")
-    # sales_explanation = explain_performance(periodical_sales, llm, plot_choice)
-    # st.markdown(sales_explanation)
+    sales_explanation = explain_performance(periodical_sales, llm, plot_choice)
+    st.markdown(sales_explanation)
     
 with tab5:
     link2 = "https://tariffsupp.streamlit.app/"
