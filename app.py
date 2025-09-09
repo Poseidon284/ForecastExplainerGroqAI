@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 from forecast_utils import make_forecast, plot_forecast, mark_pdf
 from genai_utils import explain_forecast, setup, get_llm, explain_performance
-from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, sales_bar, days_plot, months_plot, holiday_analysis
+from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, avg_sales_bar, days_plot, months_plot, holiday_analysis
 import io
 
 # Load Prophet model
@@ -15,6 +15,8 @@ llm = get_llm(api_key)
 
 st.title("📑 MarketBuddy")
 st.set_page_config(layout='wide')
+if 'graph_explains' not in st.session_state:
+    st.session_state.graph_explains = {}
 
 option = st.selectbox(
     "Select Forecast Horizon:",
@@ -112,25 +114,30 @@ with tab1:
         )
 
         if st.session_state.sales_choice == "Past Sales":
-            st.subheader("Past Sales")
+            st.title("Past Sales")
             fig_line = trend_charts(level_fore, periods, 'P')
-            st.plotly_chart(fig_line, use_container_width=True)
+            col1, col2 = st.columns(2, vertical_alignment='top')
+            with col1:
+                st.plotly_chart(fig_line, use_container_width=True)
+            with col2:
+                st.subheader("Five recent Periods")
+                st.table(level_fore[:-periods].tail().reset_index(drop=True))
             st.text("This is your average sales for the past five periods you selected.")
-            st.table(level_fore[:-periods].tail().reset_index(drop=True))
             dl_option = st.selectbox("Select Format to download", ("html"), key="sales")
             download_plotly_chart(fig_line, filename="past_sales_chart", format=dl_option)
             st.info("Your file is ready to be downloaded!")
 
         if st.session_state.sales_choice == "Forecasts":
-            st.subheader("Forecast Sales")
+            st.title("Forecast Sales")
             fig_line2 = trend_charts(level_fore, periods, 'F')
-            fig_line2.update_layout(
-                yaxis=dict(range=[0,1500])
-            )
-            st.plotly_chart(fig_line2, use_container_width=True)
+            col1, col2 = st.columns(2, vertical_alignment='top')
+            with col1:
+                st.plotly_chart(fig_line2, use_container_width=True)
+            with col2:
+                st.subheader("Forecasted Periods")
+                st.table(level_fore[-periods:].reset_index(drop=True))
             st.text("This is your forecasted average sales for the period you selected.")
             st.write(f"Total Estimated Revenue in this Forecast period : € **{forecast['yhat'][-horizon_days:].sum().round(2)}**")
-            st.table(level_fore[-periods:].reset_index(drop=True))
             dl_option = st.selectbox("Select Format to download", ("html"), key="sales")
             download_plotly_chart(fig_line2, filename="forecast_sales_chart", format=dl_option)
             st.info("Your file is ready to be downloaded!")
@@ -209,26 +216,28 @@ with tab4:
     with col2:
         plot_choice = st.selectbox("View sales by:", ["Monthly Average", "Quarterly Average", "Months" ,"Days", "Holidays"], index=0)
     if plot_choice == 'Monthly Average':
-        fig, periodical_sales = sales_bar('M', year_choice)
+        fig, periodical_sales = avg_sales_bar('M', year_choice)
     elif plot_choice == 'Quarterly Average':
-        fig, periodical_sales = sales_bar('Q', year_choice)
+        fig, periodical_sales = avg_sales_bar('Q', year_choice)
     elif plot_choice == 'Months':
         fig, periodical_sales = months_plot(year_choice)
     elif plot_choice == "Days":
         fig, periodical_sales = days_plot(year_choice)
     elif plot_choice == "Holidays":
-        fig, periodical_sales = holiday_analysis()
+        fig, periodical_sales = holiday_analysis(year_choice)
     if len(fig)==1:
         st.plotly_chart(fig[0])
     elif len(fig)==2:
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([3,7])
         with col1:
             st.plotly_chart(fig[1])
         with col2:
             st.plotly_chart(fig[0])
     st.subheader("Insights")
-    sales_explanation = explain_performance(periodical_sales, llm, plot_choice)
-    st.markdown(sales_explanation)
+    if (plot_choice, year_choice) not in st.session_state.graph_explains:
+        st.session_state.graph_explains[(plot_choice, year_choice)] = explain_performance(periodical_sales, llm, plot_choice)
+        st.info("Model Called")
+    st.markdown(st.session_state.graph_explains[(plot_choice, year_choice)])
     
 with tab5:
     link2 = "https://tariffsupp.streamlit.app/"
@@ -237,4 +246,4 @@ with tab5:
         """Ask your data questions and you shall get answers.
 ***(Try something like "Give me the Sales Details for the US for A,B,C and D")***"""
     )
-    st.markdown(f"[Chatbot]({link2})")
+    st.markdown(f"[Find our chatbot here]({link2})")
