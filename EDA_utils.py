@@ -10,35 +10,42 @@ import numpy as np
 eda_df = pd.read_csv("eda_df.csv")
 eda_df['date'] = pd.to_datetime(eda_df['date'])
 
-def days_plot():
+def days_plot(year):
+    if year == "All":
+        year = eda_df["date"].dt.year.unique()
+    else:
+        year = [year]
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     totals = []
 
     for i,day in enumerate(days):
-        total = eda_df.loc[(eda_df['date'].dt.dayofweek == i), 'Sales'].sum() #Monday is 0 and Sun is 6
+        total = eda_df.loc[(eda_df['date'].dt.year.isin(year)) & (eda_df['date'].dt.dayofweek == i), 'Sales'].sum() #Monday is 0 and Sun is 6
         totals.append(round(total,2))
 
     plot_df = pd.DataFrame({
         "Days":days,
-        "Sales": totals
+        "Sales": totals,
     })
 
-    fig = px.bar(plot_df, x='Days', y='Sales', text='Sales',
-                title='Historical Cake Sales by Day of Week', 
-                labels={'Days':'Day'}
+    fig1 = px.bar(plot_df, x='Days', y='Sales', text='Sales',
+                title=f'Historical Cake Sales by Day of Week for {", ".join(str(x) for x in year)}', 
+                labels={'Days':'Day'},
     )
 
-    fig.update_traces(textposition='outside')
-    fig.update_layout(yaxis_title='Total Cake Sales', xaxis_title='Days', width=700, height=500)
-    return fig, plot_df
+    fig1.update_layout(yaxis_title='Total Cake Sales', xaxis_title='Days',text_auto=".2f", width=700, height=500)
+    return [fig1], plot_df
 
-def months_plot():
+def months_plot(year):
+    if year == "All":
+        year = eda_df["date"].dt.year.unique()
+    else:
+        year = [year]
     totals = []
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
     for i in range(1, 13): 
-        total = eda_df.loc[(eda_df['date'].dt.month == i), 'Sales'].sum()
+        total = eda_df.loc[(eda_df['date'].dt.year.isin(year)) & (eda_df['date'].dt.month == i), 'Sales'].sum()
         totals.append(round(total, 2))
 
     plot_df = pd.DataFrame({
@@ -51,12 +58,12 @@ def months_plot():
         x='Month',
         y='Sales',
         text='Sales',
-        title='Total Cake Sales by Month',
+        text_auto=".2f",
+        title=f'Total Cake Sales by Month for {', '.join(str(x) for x in year)}',
     )
 
-    fig.update_traces(textposition='outside')
     fig.update_layout(yaxis_title='Total Cake Sales', xaxis_title='Month', width=700, height=500)
-    return fig, plot_df
+    return [fig], plot_df
 
 def holiday_analysis():
     new_df = eda_df.copy()
@@ -97,29 +104,34 @@ def holiday_analysis():
     fig1 = px.bar(
         x=['Non-Holiday Sales','Holiday Sales'], 
         y=[non_holiday_sales, holiday_mean_sales], 
-        title="Holiday Effect on Sales",
+        title="Holiday Effect on Sales(Holiday and one day before vs Other days)",
         text_auto=".2f",
     )
     fig1.update_layout(
         xaxis=dict(title="Holidays"),
         yaxis=dict(title="Average Sales"),
     )
+
     fig = [fig0, fig1]
     return fig, grouped
 
-def sales_bar(period = 'M'):
+def sales_bar(period = 'M', year = "All"):
+    if year == "All":
+        year = eda_df["date"].dt.year.unique()
+    else:
+        year = [year]
     if period == 'M':
         eda_df["Period"] = eda_df["date"].dt.to_period("M")
         periodical_sales = (
-            eda_df.groupby("Period")["Sales"]
-            .sum()
+            eda_df[eda_df["date"].dt.year.isin(year)].groupby("Period")["Sales"]
+            .mean()
             .reset_index()
         )
     elif period == 'Q':
         eda_df["Period"] = eda_df["date"].dt.to_period("Q")
         periodical_sales = (
-            eda_df.groupby("Period")["Sales"]
-            .sum()
+            eda_df[eda_df["date"].dt.year.isin(year)].groupby("Period")["Sales"]
+            .mean()
             .reset_index()
         )
     periodical_sales["Period"] = periodical_sales["Period"].astype(str)
@@ -128,10 +140,13 @@ def sales_bar(period = 'M'):
         x="Period",
         y="Sales",
         labels={"Period": "Months", "Sales": "Sales"},
-        title="Monthly Sales from Daily Data"
     )
     fig.update_layout(bargap=0.15,xaxis_tickangle=-45, yaxis=dict(tickprefix='€'))
-    return fig, periodical_sales
+    if period == 'M':
+        fig.update_layout(title=f"Average Daily Sales per Month for {", ".join(str(x) for x in year)}")
+    else:
+        fig.update_layout(title=f"Average Daily Sales per Quarter for {", ".join(str(x) for x in year)}")
+    return [fig], periodical_sales
 
 def evaluate_forecast(forecast):    
     width = forecast['yhat_upper'] - forecast['yhat_lower']
@@ -189,4 +204,4 @@ def trend_charts(level_fore, periods, fperiod='P'):
             )
         )
     
-    return fig_line
+    return [fig_line]

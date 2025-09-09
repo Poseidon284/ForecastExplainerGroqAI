@@ -14,7 +14,7 @@ api_key = setup("GROQ_API_KEY")
 llm = get_llm(api_key)
 
 st.title("📑 MarketBuddy")
-st.set_page_config(layout="wide")
+st.set_page_config(layout='wide')
 
 option = st.selectbox(
     "Select Forecast Horizon:",
@@ -199,33 +199,36 @@ with tab3:
 
 with tab4:
     # link = "https://mybinder.org/v2/gh/Poseidon284/ForecastNtbkHost/5438b8dc9f0c97d7343c8684eb1e2f119f3872ee?urlpath=lab%2Ftree%2FProphetForecasting.ipynb"
-    st.subheader("Understand more about your sales data here")
     # st.text("Open the below link and click on the View on voila icon - The yellow curve in the task bar")
     # st.markdown(f"[View EDA]({link})")
-    st.subheader("View your data")
-    plot_choice = st.selectbox("View sales by:", ["Monthly Average", "Quarterly Average", "Months" ,"Days", "Holidays"], index=0)
+    st.subheader("Undersatand your sales")
+    st.write("Here are some charts you might want to see")
+    col1, col2 = st.columns(2)
+    with col1:
+        year_choice = st.selectbox("Choose year:",[2021, 2022, "All"], index=2)
+    with col2:
+        plot_choice = st.selectbox("View sales by:", ["Monthly Average", "Quarterly Average", "Months" ,"Days", "Holidays"], index=0)
     if plot_choice == 'Monthly Average':
-        fig, periodical_sales = sales_bar('M')
+        fig, periodical_sales = sales_bar('M', year_choice)
     elif plot_choice == 'Quarterly Average':
-        fig, periodical_sales = sales_bar('Q')
+        fig, periodical_sales = sales_bar('Q', year_choice)
     elif plot_choice == 'Months':
-        fig, periodical_sales = months_plot()
+        fig, periodical_sales = months_plot(year_choice)
     elif plot_choice == "Days":
-        fig, periodical_sales = days_plot()
+        fig, periodical_sales = days_plot(year_choice)
     elif plot_choice == "Holidays":
         fig, periodical_sales = holiday_analysis()
-    if len(fig.data)==1:
-        st.plotly_chart(fig)
+    if len(fig)==1:
+        st.plotly_chart(fig[0])
     elif len(fig)==2:
         col1, col2 = st.columns(2)
         with col1:
             st.plotly_chart(fig[1])
         with col2:
             st.plotly_chart(fig[0])
-    st.divider()
-    st.title("Insights")
-    sales_explanation = explain_performance(periodical_sales, llm, plot_choice)
-    st.markdown(sales_explanation)
+    st.subheader("Insights")
+    # sales_explanation = explain_performance(periodical_sales, llm, plot_choice)
+    # st.markdown(sales_explanation)
     
 with tab5:
     link2 = "https://tariffsupp.streamlit.app/"
