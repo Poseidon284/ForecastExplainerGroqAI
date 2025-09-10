@@ -104,8 +104,8 @@ def holiday_analysis(years):
         yaxis=dict(title="Average Sales", tickprefix='€'),
     )
 
-    non_holiday_sales = new_df.loc[~new_df['is_holiday_or_before'], 'Sales'].mean()
-    holiday_mean_sales = new_df.loc[new_df["is_holiday_or_before"], 'Sales'].mean()
+    non_holiday_sales = new_df.loc[~new_df['is_holiday_or_before'], 'Sales'].mean().round(2)
+    holiday_mean_sales = new_df.loc[new_df["is_holiday_or_before"], 'Sales'].mean().round(2)
 
     fig1 = px.bar(
         x=['Non-Holiday Sales','Holiday Sales'], 

@@ -59,7 +59,7 @@ def explain_performance(sales, llm, freq):
     prompt_template = ChatPromptTemplate.from_messages([("system", f"""You are a Sales Representative tasked with giving an overview on Sales data based on the reports you receive.
     The reports are in either monthly or quarterly format. Give output in a markdown friendly format in a professional format. Highlight highest performing and lowest performing period at the end.
     Here is the report\n Report : {sales}"""),
-    ("user", f"Here is the frequency: {freq}.You should provide insights in 10 bullet points. Give only text and numbers.")])
+    ("user", f"Here is the frequency: {freq}.If the frequency is 'Holidays' then only holiday average vs non-holiday average information is passed. You should provide insights in 10 bullet points with a very quick note on how this point is arrived at in a business-friendly way - Use only text for the notes. Finally give a business-friendly bottom line. Give only text and numbers.")])
     chain = prompt_template | llm
     response = chain.invoke({})
     return response.content

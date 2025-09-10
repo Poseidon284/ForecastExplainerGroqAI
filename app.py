@@ -180,8 +180,7 @@ with tab2:
 with tab3:
     if "explanation" in st.session_state:
         explanation = st.session_state["explanation"]
-
-        st.subheader("How did we arrive here?")
+        st.title("How did we arrive here?")
         st.text(
             """We’ve put these insights together using the power of AI,\
  your past sales patterns and historical trends, compared with the expected sales for the period you selected. To\
@@ -228,11 +227,11 @@ with tab4:
     if len(fig)==1:
         st.plotly_chart(fig[0])
     elif len(fig)==2:
-        col1, col2 = st.columns([3,7])
+        col1, col2 = st.columns([7,3])
         with col1:
-            st.plotly_chart(fig[1])
-        with col2:
             st.plotly_chart(fig[0])
+        with col2:
+            st.plotly_chart(fig[1])
     st.subheader("Insights")
     if (plot_choice, year_choice) not in st.session_state.graph_explains:
         st.session_state.graph_explains[(plot_choice, year_choice)] = explain_performance(periodical_sales, llm, plot_choice)
