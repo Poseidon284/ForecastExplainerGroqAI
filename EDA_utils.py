@@ -8,6 +8,8 @@ import uuid
 import numpy as np
 
 eda_df = pd.read_csv("eda_df.csv")
+eda_df = eda_df.rename(columns={col: "date" for col in eda_df.columns if col in ["Date", "ds"]})
+eda_df = eda_df.rename(columns={col: "Sales" for col in eda_df.columns if col in ["sale", "sales", 'y', 'revenue', 'Revenue']})
 eda_df['date'] = pd.to_datetime(eda_df['date'])
 
 # Plots total Sales for each day of the week
