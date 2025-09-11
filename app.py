@@ -235,7 +235,7 @@ with tab4:
     st.subheader("Insights")
     if (plot_choice, year_choice) not in st.session_state.graph_explains:
         st.session_state.graph_explains[(plot_choice, year_choice)] = explain_performance(periodical_sales, llm, plot_choice)
-        st.info("Model Called")
+        # st.info("Model Called")
     st.markdown(st.session_state.graph_explains[(plot_choice, year_choice)])
     
 with tab5:
