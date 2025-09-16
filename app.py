@@ -236,6 +236,8 @@ with tab4:
     if (plot_choice, year_choice) not in st.session_state.graph_explains:
         st.session_state.graph_explains[(plot_choice, year_choice)] = explain_performance(periodical_sales, llm, plot_choice)
         # st.info("Model Called")
+    if len(fig) == 1:
+        download_plotly_chart(fig[0], filename=f"{plot_choice}_{year_choice}")
     st.markdown(st.session_state.graph_explains[(plot_choice, year_choice)])
     
 with tab5:
