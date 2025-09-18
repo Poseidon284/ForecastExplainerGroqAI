@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 from forecast_utils import make_forecast, plot_forecast, mark_pdf
 from genai_utils import explain_forecast, setup, get_llm, explain_performance
-from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, avg_sales_bar, days_plot, months_plot, holiday_analysis
+from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, avg_sales_bar, days_plot, months_plot, holiday_analysis, line_chart_forecast
 import io
 
 # Load Prophet model
@@ -91,13 +91,14 @@ if st.button("Generate Forecast"):
     st.session_state["agg_option"] = option
 
     # AI explanation
-    st.session_state["explanation"] = explain_forecast(level_fore, llm, periods, option)
+    holidays = pd.read_csv('holidays_df.csv', index_col=0)
+    st.session_state["explanation"] = explain_forecast(level_fore, llm, periods, option, holidays)
 
 # --------------------
 # Tabs (always exist)
 # --------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["📊 Forecast Table", "📈 Trend Charts", "🤖 AI Insights", "⚡️Analytics", "֎ Chatbot"]
+    ["📊 Forecast Table", "📈 Charts", "🤖 AI Insights", "⚡️Analytics", "֎ Chatbot"]
 )
 
 with tab1:
@@ -130,12 +131,14 @@ with tab1:
         if st.session_state.sales_choice == "Forecasts":
             st.title("Forecast Sales")
             fig_line2 = trend_charts(level_fore, periods, 'F')
+            fig_line3 = line_chart_forecast(level_fore, periods)
             col1, col2 = st.columns(2, vertical_alignment='top')
             with col1:
                 st.plotly_chart(fig_line2, use_container_width=True)
             with col2:
-                st.subheader("Forecasted Periods")
-                st.table(level_fore[-periods:].reset_index(drop=True))
+                st.plotly_chart(fig_line3, use_container_width=True)
+            st.subheader("Forecasted Periods")
+            st.table(level_fore[-periods:].reset_index(drop=True))
             st.text("This is your forecasted average sales for the period you selected.")
             st.write(f"Total Estimated Revenue in this Forecast period : € **{forecast['yhat'][-horizon_days:].sum().round(2)}**")
             dl_option = st.selectbox("Select Format to download", ("html"), key="sales")
@@ -238,6 +241,10 @@ with tab4:
         # st.info("Model Called")
     if len(fig) == 1:
         download_plotly_chart(fig[0], filename=f"{plot_choice}_{year_choice}")
+    # else:
+    #     download_plotly_chart(fig[0], filename=f"{plot_choice}_{year_choice}_1")
+    #     download_plotly_chart(fig[1], filename=f"{plot_choice}_{year_choice}_2")
+
     st.markdown(st.session_state.graph_explains[(plot_choice, year_choice)])
     
 with tab5:

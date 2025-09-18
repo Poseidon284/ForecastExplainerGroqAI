@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.io as pio
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -7,6 +8,7 @@ import holidays
 import uuid
 import numpy as np
 
+pio.templates.default = "plotly"
 eda_df = pd.read_csv("eda_df.csv")
 eda_df = eda_df.rename(columns={col: "date" for col in eda_df.columns if col in ["Date", "ds"]})
 eda_df = eda_df.rename(columns={col: "Sales" for col in eda_df.columns if col in ["sale", "sales", 'y', 'revenue', 'Revenue']})
@@ -219,6 +221,34 @@ def trend_charts(level_fore, periods, fperiod='P'):
                 title="Periods"
             ),
             yaxis=dict(tickprefix='€')
-        )
+    )
     
     return fig_line
+
+def line_chart_forecast(level_fore, periods):
+    plot_df = level_fore.copy()
+    plot_df['Period'] = range(1, len(plot_df) + 1)
+    cutoff = plot_df["Period"].iloc[-periods]
+    fig_line = px.line(plot_df, x='Period', y='Average Sales', title="Forecasted Revenue", markers=True)
+    fig_line.add_vrect(
+        x0=cutoff,
+        x1=plot_df["Period"].max(),
+        fillcolor="red",
+        opacity=0.1,
+        line_width=0,
+        annotation_text="Forecast Period",
+        annotation_position="top left"
+    )
+    fig_line.update_layout(
+            xaxis=dict(
+                tickmode="array",
+                tickvals=plot_df["Period"],
+                ticktext=plot_df["Date"].astype(str),
+                showticklabels=False, 
+                title="Periods"
+            ),
+            yaxis=dict(tickprefix='€')
+    )
+
+    return fig_line
+

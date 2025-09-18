@@ -28,8 +28,9 @@ def get_llm(api_key):
         temperature=0.2
     )
 
-def explain_forecast(forecast, llm, period, freq):
+def explain_forecast(forecast, llm, period, freq, holidays):
     forecast_data = forecast[-period:]
+    holidays = holidays.to_string()
     history = pd.read_csv('monthly_data_cakes.csv', index_col=0)
     forecast = forecast.to_string()
     dates = history['date'].tolist()
@@ -38,11 +39,13 @@ def explain_forecast(forecast, llm, period, freq):
 
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", f"""You are an expert data story-teller tasked with explaining the forecast to a manager who wants to see how well his company is performing and what to look forward to based on this data"
-        Historical Sales Data:\n{dates,sales}. This data is from France so if there is a French holiday with high average, tell that.
-        These terms are banned - yhat, trend, forecast. There is no geographic focus on the data.
+        Historical Sales Data:\n{dates,sales}. This data is from France so if there is a French holiday with high sales, tell that. Here are the French Holidays {holidays}
+        These terms are banned - yhat, trend, forecast. There is no geographic focus on the data. Q1 - Jan, Feb, Mar. Q2 - Apr, May, Jun. Q3 - Jul, Aug, Sep. Q4 - Oct, Nov, Dec. 
+        The sales is for a Bakery. Do not suggest long term campaigns like punch cards. Just suggest promotions and small campaigns.
         Any outliers could be explained by actual holidays in France or popular tourist times."""),
-        ("user",f"""Forecasted Sales Data:\n{forecast_data, freq}. This forecast is the average for daily data for the given frequency.
+        ("user",f"""Forecasted Sales Data:\n{forecast_data, freq, period}. This forecast is the average for daily data for the given frequency and period.
          If it is "M" then it is average forecast is for that month, If it is "W" then it is average forecast for the week. If it is "QE" then it is average forecast for next quarter.
+         The period gives you the number of forecasted periods. Example: A frequency is M and period is 4 then it is the forecast for the next 4 months.  
          If it is Monthly forecast, give insights to improve for the forecasted months. For weekly, describe how the sales will be for the weeks to come and give pointers to tackle that. If Quarterly, compare it with history and give insights about the quarters.
          Give some actionable insights in 8 bullet points that will be within 15-25 lines. 
          DO NOT GIVE SLIDE SEPARATIONS "Slide 3 - What to do with this information" 
