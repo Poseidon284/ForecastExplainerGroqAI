@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-product_df = pd.read_csv('D:/datasets/Product Health/eda_product.csv', index_col=0)
+product_df = pd.read_csv('eda_product.csv', index_col=0)
 
 def recency_score(row, ref_date):
     days_since_sale = (ref_date - row["Recent_Sale"]).days
