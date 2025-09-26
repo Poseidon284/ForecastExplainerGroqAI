@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import pickle
+from datetime import datetime
 from forecast_utils import make_forecast, plot_forecast, mark_pdf
 from genai_utils import explain_forecast, setup, get_llm, explain_performance
 from EDA_utils import trend_charts, download_plotly_chart, evaluate_forecast, avg_sales_bar, days_plot, months_plot, holiday_analysis, line_chart_forecast
+from product_utils import lookup_details, prod_pred
 import io
 
 # Load Prophet model
@@ -14,7 +17,7 @@ api_key = setup("GROQ_API_KEY")
 llm = get_llm(api_key)
 
 st.title("📑 MarketBuddy")
-st.set_page_config(layout='wide')
+# st.set_page_config(layout='wide')
 if 'graph_explains' not in st.session_state:
     st.session_state.graph_explains = {}
 
@@ -97,8 +100,8 @@ if st.button("Generate Forecast"):
 # --------------------
 # Tabs (always exist)
 # --------------------
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["📊 Forecast Table", "📈 Charts", "🤖 AI Insights", "⚡️Analytics", "֎ Chatbot"]
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    ["📊 Forecast Table", "📈 Charts", "🤖 AI Insights", "⚡️Analytics", "Product Relevance", "֎ Chatbot"]
 )
 
 with tab1:
@@ -246,12 +249,76 @@ with tab4:
     #     download_plotly_chart(fig[1], filename=f"{plot_choice}_{year_choice}_2")
 
     st.markdown(st.session_state.graph_explains[(plot_choice, year_choice)])
-    
 with tab5:
+    st.title("📊 Product Lookup & Prediction")
+
+    if "lookup_done" not in st.session_state:
+        st.session_state.lookup_done = False
+    if "pred_done" not in st.session_state:
+        st.session_state.pred_done = False
+
+    with st.container():
+        st.markdown("### 🔍 Lookup Product")
+        st.divider()
+
+        prod_id = st.text_input("Enter Product ID")
+
+        if st.button("Search"):
+            if prod_id:
+                details = lookup_details(prod_id)
+                if not details.empty:
+                    st.session_state.lookup_done = True
+                    st.session_state.lookup_result = details
+                else:
+                    st.warning("No product found with that ID.")
+
+        if st.session_state.lookup_done:
+            st.subheader("Product Details")
+            st.dataframe(st.session_state.lookup_result)
+
+    with st.container():
+        st.subheader("📈 Predict Product Relevance for estimated metrics")
+        st.divider()
+
+        if st.session_state.lookup_done:
+            col1, col2 = st.columns(2)
+            with col1:
+                first_sale = st.date_input("First Sale Date", value=datetime.today())
+                recent_sale = st.date_input("Most Recent Sale Date",value=datetime.today())
+                total_sales = st.number_input("Total Sales", min_value=0, value=100)
+            with col2:
+                ref_date = st.date_input("Reference Date", value=datetime.today())
+                days_in_market = st.number_input("Days in Market", value=(pd.Timestamp.today().normalize().date() - first_sale).days)
+                unique_days = st.number_input("Unique Purchase Dates")
+
+            if st.button("Predict"):
+                row = {
+                    "First_Sale": pd.to_datetime(first_sale),
+                    "Recent_Sale": pd.to_datetime(recent_sale),
+                    "Total_Sales": total_sales,
+                    "Days_in_Market": days_in_market,
+                    "Unique_purchase_dates": unique_days
+                }
+                row = pd.Series(row)
+
+                result = prod_pred(row, pd.to_datetime(ref_date))
+                st.session_state.pred_done = True
+                st.session_state.pred_result = result
+
+        else:
+            st.info("Please complete **Lookup Product** first before entering prediction details.")
+
+        if st.session_state.pred_done:
+            st.subheader("Prediction Results")
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Popularity Score", f"{st.session_state.pred_result['Popularity_Score']*100:.2f}")
+            col2.metric("Relevance Score", f"{st.session_state.pred_result['Relevance_Score']*100:.2f}")
+            col3.metric("Product Cluster", st.session_state.pred_result["Product_Cluster"])
+with tab6:
     link2 = "https://tariffsupp.streamlit.app/"
     st.title("Chat with your Data")
     st.write(
-        """Ask your data questions and you shall get answers.
+        """Ask your data questions and get answers.
 ***(Try something like "Give me the Sales Details for the US for A,B,C and D")***"""
     )
     st.markdown(f"[Find our chatbot here]({link2})")

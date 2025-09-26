@@ -6,7 +6,6 @@ import numpy as np
 import io
 import holidays
 import uuid
-import numpy as np
 
 pio.templates.default = "plotly"
 eda_df = pd.read_csv("eda_df.csv")
