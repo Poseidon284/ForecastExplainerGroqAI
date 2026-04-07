@@ -6,16 +6,12 @@ ForecastExplainerGroqAI is a Streamlit-based frontend application that enables u
 
 ## Overview
 
-This application is designed as a client layer for a document question-answering system. It does not implement retrieval or model inference internally. Instead, it:
-
-- Collects user queries and file inputs
-- Sends them to a backend API
-- Displays responses returned by the backend
-
----
-
 ## Core Functionality
 
+- Creates Forecasts based on past sales data
+- Provides Insights based on said foreccasted sales
+- Makes forecasts for certain high moving SKUs
+- Provides descriptive analytics for overall sales over time, SKUs and categories
 - Accepts natural language queries from users
 - Supports document-based querying via file input
 - Sends requests to a backend chatbot service
@@ -24,6 +20,11 @@ This application is designed as a client layer for a document question-answering
   - Supporting sources
 - Maintains a direct mapping between backend response and UI
 
----
+## Footnotes
 
-## System Flow
+Run the application: https://forecastexplainergroapp.streamlit.app/
+
+If inactive, contact:
+
+https://www.linkedin.com/in/radheshrathnam
+radheshrathnam28@gmail.com
